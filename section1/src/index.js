@@ -1,27 +1,22 @@
 import { GraphQLServer } from "graphql-yoga";
 
 const typedefs = `
-   type Query {
-       hello: String!
-       name: String!
-       loaction: String!
-       bio: String!
-   }
+  type Query{
+    name: String!
+    isAuthenticated: Boolean!
+    age: Int!
+    sgpa: Float
+    key: ID!
+  }
 `;
+
 const resolvers = {
   Query: {
-    hello() {
-      return "Hello world from Manoj...";
-    },
-    name() {
-      return "silag Manoj";
-    },
-    loaction() {
-      return "Ahmednagar";
-    },
-    bio() {
-      return "Software Developer";
-    }
+    name() { return "Manoj"},
+    isAuthenticated(){ return false},
+    age(){ return 24 },
+    sgpa(){ return },
+    key(){ return 'fdsfsd12322'}
   }
 };
 
