@@ -1,9 +1,63 @@
 import { GraphQLServer } from "graphql-yoga";
 
+//Demo user data
+const users = [
+  {
+    id: "1",
+    name: "Manoj",
+    email: "manoj@example.com",
+    age: 12
+  },
+  {
+    id: "2",
+    name: "sarah",
+    email: "sarah@example.com"
+  },
+  {
+    id: "3",
+    name: "vinod",
+    email: "vinod@example.com",
+    age: 23
+  },
+  {
+    id: "4",
+    name: "nik",
+    email: "nik@example.com"
+  }
+];
+
+const posts = [
+  {
+    id: "1",
+    title: "a life in boat",
+    body: "This is a story of boat",
+    published: false
+  },
+  {
+    id: "2",
+    title: "dom",
+    body: "Once upon time a person named dom",
+    published: true
+  },
+  {
+    id: "3",
+    title: "worn",
+    body: "The story of worn",
+    published: false
+  },
+  {
+    id: "4",
+    title: "the king",
+    body: "Queen the one and",
+    published: true
+  }
+];
+
 const typedefs = `
-  type Query{
-    add(num1: Float, num2: Float ): Float!
-    greeting(name: String, job: String): String!
+  type Query
+  {
+    users(query: String): [User!]!
+    posts(query: String): [Post!]!
     me: User!
     Post: Post!
   }
@@ -22,6 +76,7 @@ const typedefs = `
     published: Boolean!
   }
   
+
 `;
 
 const resolvers = {
@@ -42,18 +97,29 @@ const resolvers = {
         published: false
       };
     },
-    greeting(parent, args, ctx, info) {
-      // console.log(args);
-      if (args.name && args.job) {
-        return `Heloooooo ${args.name}! YOur job is ${args.job}`;
+    users(parent, args, ctx, info) {
+      if (!args.query) {
+        return users;
       } else {
-        return "Hellooooo";
+        return users.filter((user) => {
+          return user.name.toLowerCase().includes(args.query.toLowerCase());
+        });
       }
     },
-    add(parent, args) {
-      const num1 = args.num1;
-      const num2 = args.num2;
-      return (num1 + num2);
+    posts(parent, args, ctx, info) {
+      if (!args.query) {
+        return posts;
+      } else {
+        return posts.filter((post) => {
+          const isTitleMatch = post.title
+            .toLowerCase()
+            .includes(args.query.toLowerCase());
+          const isBodyMatch = post.body
+            .toLowerCase()
+            .includes(args.query.toLowerCase());
+          return isTitleMatch || isBodyMatch;
+        });
+      }
     }
   }
 };
