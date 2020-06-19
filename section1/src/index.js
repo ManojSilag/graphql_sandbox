@@ -31,25 +31,29 @@ const posts = [
     id: "1",
     title: "a life in boat",
     body: "This is a story of boat",
-    published: false
+    published: false,
+    author: "3"
   },
   {
     id: "2",
     title: "dom",
     body: "Once upon time a person named dom",
-    published: true
+    published: true,
+    author: "2"
   },
   {
     id: "3",
     title: "worn",
     body: "The story of worn",
-    published: false
+    published: false,
+    author: "1"
   },
   {
     id: "4",
     title: "the king",
     body: "Queen the one and",
-    published: true
+    published: true,
+    author: "3"
   }
 ];
 
@@ -67,6 +71,7 @@ const typedefs = `
     id: ID!
     email: String!
     age: Int
+    posts: [Post!]!
   }
 
   type Post{
@@ -74,6 +79,8 @@ const typedefs = `
     title: String!
     body: String!
     published: Boolean!
+    author: User!
+
   }
   
 
@@ -120,6 +127,20 @@ const resolvers = {
           return isTitleMatch || isBodyMatch;
         });
       }
+    }
+  },
+  Post: {
+    author(parent, args, ctx, info) {
+      return users.find((user) => {
+        return user.id === parent.author;
+      });
+    }
+  },
+  User: {
+    posts(parent, args, ctx, info) {
+      return posts.filter((post) => {
+        return post.author === parent.id;
+      });
     }
   }
 };
