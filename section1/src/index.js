@@ -1,7 +1,8 @@
 import { GraphQLServer } from "graphql-yoga";
 import { v4 as uuidv4 } from "uuid";
+
 //Demo user data
-const users = [
+let users = [
   {
     id: "1",
     name: "Manoj",
@@ -26,7 +27,7 @@ const users = [
   }
 ];
 
-const posts = [
+let posts = [
   {
     id: "1",
     title: "a life in boat",
@@ -57,7 +58,7 @@ const posts = [
   }
 ];
 
-const comments = [
+let comments = [
   {
     id: "1",
     text: "Very good",
@@ -98,6 +99,9 @@ const typedefs = `
     createUser(data: CreateUserInput!): User!
     createPost(data: CreatePostInput!): Post!
     createComment(data: CreateCommentInput!): Comment!
+    deleteUser(id: ID!): User!
+    deletePost(id: ID!): Post!
+    deleteComment(id: ID!): Comment!
   }
 
   input CreateUserInput{
@@ -205,9 +209,32 @@ const resolvers = {
       users.push(user);
       return user;
     },
+    deleteUser(parent, args, ctx, info) {
+      const userIndex = users.findIndex((user) => user.id === args.id);
+      if (userIndex === -1) {
+        throw new Error("user Not Found");
+      }
 
+      const deletedUsers = users.splice(userIndex, 1);
+
+      posts = posts.filter((post) => {
+        const match = post.author === args.id;
+        if (match) {
+          comments = comments.filter((comment) => {
+            return comment.post !== post.id;
+          });
+        }
+        return !match;
+      });
+
+      comments = comments.filter((comment) => {
+        comment.author !== args.id;
+      });
+
+      return deletedUsers[0];
+    },
     createPost(parent, args, ctx, info) {
-      console.log('dev: createPost -> args', args)
+      console.log("dev: createPost -> args", args);
       const userExist = users.some((user) => user.id === args.data.author);
       if (!userExist) {
         throw new Error("User Not Found");
@@ -218,6 +245,19 @@ const resolvers = {
       };
       posts.push(post);
       return post;
+    },
+
+    deletePost(parent, args, ctx, info) {
+      const PostIndex = posts.findIndex((post) => post.id === args.id);
+      if (PostIndex === -1) {
+        throw new Error("Post Not Found");
+      }
+      const deletedposts = posts.splice(PostIndex, 1);
+      comments = comments.filter((comment) => {
+        return comment.post !== args.id;
+      });
+
+      return deletedposts[0];
     },
 
     createComment(parent, args, ctx, info) {
@@ -239,6 +279,17 @@ const resolvers = {
       };
       comments.push(comment);
       return comment;
+    },
+
+    deleteComment(parent, args, ctx, info) {
+      const CommentIndex = comments.findIndex(
+        (comment) => comment.id === args.id
+      );
+      if (CommentIndex === -1) {
+        throw new Error("Comment Not Found");
+      }
+      const deletedcomments = comments.splice(CommentIndex, 1);
+      return deletedcomments[0];
     }
   },
 
