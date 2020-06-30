@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 
 const Mutation = {
+
   createUser(parent, args, { db }, info) {
     const emailTaken = db.users.some((user) => user.email === args.data.email);
     if (emailTaken) {
@@ -13,6 +14,7 @@ const Mutation = {
     db.users.push(user);
     return user;
   },
+
   deleteUser(parent, args, { db }, info) {
     const userIndex = db.users.findIndex((user) => user.id === args.id);
     if (userIndex === -1) {
@@ -37,6 +39,7 @@ const Mutation = {
 
     return deleteddbUsers[0];
   },
+
   updateUser(parent, args, { db }, info) {
     const { id, data } = args;
     const user = db.users.find((user) => user.id === id);
@@ -66,7 +69,7 @@ const Mutation = {
     return user;
   },
 
-  createPost(parent, args, { db }, info) {
+  createPost(parent, args, { db, pubsub }, info) {
     console.log("dev: createPost -> args", args);
     const userExist = db.users.some((user) => user.id === args.data.author);
     if (!userExist) {
@@ -77,8 +80,11 @@ const Mutation = {
       ...args.data
     };
     db.posts.push(post);
+
+    if(args.data.published) pubsub.publish("post", { post: post });
     return post;
   },
+
   deletePost(parent, args, { db }, info) {
     const PostIndex = db.posts.findIndex((post) => post.id === args.id);
     if (PostIndex === -1) {
@@ -91,6 +97,7 @@ const Mutation = {
 
     return deletedposts[0];
   },
+
   updatePost(parent, args, { db }, info) {
     const { id, data } = args;
     const post = db.posts.find((post) => post.id === id);
@@ -109,7 +116,7 @@ const Mutation = {
     return post;
   },
 
-  createComment(parent, args, { db }, info) {
+  createComment(parent, args, { db, pubsub }, info) {
     const userExist = db.users.some((user) => user.id === args.data.author);
     if (!userExist) {
       throw new Error("User not found");
@@ -127,6 +134,7 @@ const Mutation = {
       ...args.data
     };
     db.comments.push(comment);
+    pubsub.publish(`comment ${args.data.post}`, { comment: comment });
     return comment;
   },
 
@@ -154,6 +162,7 @@ const Mutation = {
     const deletedcomments = db.comments.splice(CommentIndex, 1);
     return deletedcomments[0];
   }
+
 };
 
 export { Mutation as default };
